@@ -1083,7 +1083,6 @@ pub mod tests {
         let (root,_) = initiate_exodus_state(&mut tree);
         let new_root = tree.insert(Some(&root),addresses,&account_vec);
         println!("Root: {:?}",new_root);
-        unimplemented!();
     }
 
 

@@ -19,6 +19,14 @@ extern crate tokio;
 extern crate tokio_io;
 extern crate tokio_proto;
 extern crate uuid;
+extern crate bitcoin;
+extern crate blake2_rfc;
+extern crate double;
+extern crate hex;
+extern crate protobuf;
+extern crate rocksdb;
+extern crate tiny_keccak;
+extern crate wallet;
 
 pub mod account;
 pub mod common;
