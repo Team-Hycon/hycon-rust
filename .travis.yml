@@ -30,7 +30,6 @@ install:
 script:
   - cargo test --all
   - cargo build --release
-  - cargo bench --all
 
 env:
   global:
