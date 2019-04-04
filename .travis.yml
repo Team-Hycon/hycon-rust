@@ -27,11 +27,18 @@ install:
     - sudo unzip -o $PROTOC_ZIP -d /usr/local bin/protoc
     - rm -f $PROTOC_ZIP
 
+before_script:
+  - export PATH=$HOME/.cargo/bin:$PATH
+  - cargo install cargo-travis || echo "cargo-travis already installed"
+
 script:
-  - cargo test --all
-  - cargo build --release
+  - cargo test --all && cargo build && cargo doc --no-deps
+
+after_success:
+  - cargo doc-upload
 
 env:
   global:
   - RUST_BACKTRACE=1
   - CC="clang"
+
