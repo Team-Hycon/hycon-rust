@@ -1,0 +1,1 @@
+initSidebarItems({"fn":[["calculate_merkle_root","Construct a merkle tree of given the hash value vector and return the root value"]],"struct":[["MerkleTree","A merkle tree"]]});
