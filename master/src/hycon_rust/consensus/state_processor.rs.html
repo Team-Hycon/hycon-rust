@@ -407,21 +407,53 @@
 <span id="407">407</span>
 <span id="408">408</span>
 <span id="409">409</span>
+<span id="410">410</span>
+<span id="411">411</span>
+<span id="412">412</span>
+<span id="413">413</span>
+<span id="414">414</span>
+<span id="415">415</span>
+<span id="416">416</span>
+<span id="417">417</span>
+<span id="418">418</span>
+<span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">BorrowMut</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::{<span class="ident">HashMap</span>, <span class="ident">HashSet</span>};
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::{<span class="ident">Arc</span>, <span class="ident">Mutex</span>};
-
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">account</span>::<span class="ident">account</span>::<span class="ident">Account</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">address</span>::<span class="ident">Address</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">block</span>::<span class="ident">Block</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">header</span>::{<span class="ident">BlockHeader</span>, <span class="ident">Header</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">header</span>::<span class="ident">Header</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">signed_tx</span>::<span class="ident">SignedTx</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">transaction</span>::<span class="ident">Transaction</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">consensus</span>::<span class="ident">worldstate</span>::{<span class="ident">Blake2bHashResult</span>, <span class="ident">WorldState</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">database</span>::<span class="ident">block_db</span>::<span class="ident">BlockDB</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">traits</span>::<span class="ident">Exception</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">traits</span>::{<span class="ident">BlockHeader</span>, <span class="ident">Encode</span>, <span class="ident">Exception</span>, <span class="ident">Proto</span>, <span class="ident">Transaction</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">util</span>::<span class="ident">strict_math</span>::<span class="ident">StrictU64</span>;
+<span class="kw">use</span> <span class="ident">secp256k1</span>::{<span class="ident">RecoverableSignature</span>, <span class="ident">RecoveryId</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::{<span class="ident">BTreeMap</span>, <span class="ident">HashMap</span>, <span class="ident">HashSet</span>};
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
+<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::{<span class="ident">Arc</span>, <span class="ident">Mutex</span>};
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">serialization</span>::<span class="ident">state</span>::<span class="ident">Account</span> <span class="kw">as</span> <span class="ident">ProtoAccount</span>;
 
@@ -429,14 +461,10 @@
 
 <span class="kw">type</span> <span class="ident">StateProcessorResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;&gt;</span>;
 
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">StateProcessor</span><span class="op">&lt;</span>
-    <span class="ident">BlockDBType</span> <span class="op">=</span> <span class="ident">BlockDB</span>,
-    <span class="ident">WorldStateType</span> <span class="op">=</span> <span class="ident">WorldState</span>,
-    <span class="ident">HashresultType</span> <span class="op">=</span> <span class="ident">Blake2bHashResult</span>,
-<span class="op">&gt;</span> {
+<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">StateProcessor</span><span class="op">&lt;</span><span class="ident">BlockDBType</span> <span class="op">=</span> <span class="ident">BlockDB</span>, <span class="ident">WorldStateType</span> <span class="op">=</span> <span class="ident">WorldState</span><span class="op">&gt;</span> {
     <span class="ident">worldstate</span>: <span class="ident">WorldStateType</span>,
     <span class="ident">block_db</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">BlockDBType</span><span class="op">&gt;&gt;</span>,
-    <span class="ident">state_cache</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">HashresultType</span><span class="op">&gt;</span>,
+    <span class="ident">state_cache</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span>,
 }
 
 <span class="kw">impl</span> <span class="ident">StateProcessor</span> {
@@ -475,7 +503,7 @@
             .<span class="ident">block_db</span>
             .<span class="ident">lock</span>()
             .<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> <span class="ident">Exception</span>::<span class="ident">new</span>(<span class="string">&quot;Poison error&quot;</span>))<span class="question-mark">?</span>
-            .<span class="ident">get_block</span>::<span class="op">&lt;</span><span class="ident">Block</span><span class="op">&lt;</span><span class="ident">Header</span>, <span class="ident">SignedTx</span><span class="op">&gt;&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">block_tip</span>)<span class="question-mark">?</span>;
+            .<span class="ident">get_block</span>::<span class="op">&lt;</span><span class="ident">Block</span><span class="op">&lt;</span><span class="ident">Header</span>, <span class="ident">SignedTx</span><span class="op">&gt;</span>, <span class="ident">Header</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="ident">block_tip</span>)<span class="question-mark">?</span>;
         <span class="kw">let</span> <span class="ident">tip_height</span>;
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">m</span>) <span class="op">=</span> <span class="ident">block</span>.<span class="ident">meta</span> {
             <span class="ident">tip_height</span> <span class="op">=</span> <span class="ident">m</span>.<span class="ident">height</span>;
@@ -490,10 +518,14 @@
         <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Exception</span>::<span class="ident">new</span>(<span class="string">&quot;Not Implemented&quot;</span>)));
     }
 
-    <span class="kw">fn</span> <span class="ident">generate_transition</span>(
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">generate_transition</span><span class="op">&lt;</span><span class="ident">HeaderType</span>, <span class="ident">TransactionType</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">blocks</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Block</span><span class="op">&lt;</span><span class="ident">Header</span>, <span class="ident">SignedTx</span><span class="op">&gt;&gt;</span>,
-    ) <span class="op">-&gt;</span> <span class="ident">StateProcessorResult</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">Address</span>, <span class="ident">ProtoAccount</span><span class="op">&gt;&gt;</span> {
+        <span class="ident">blocks</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Block</span><span class="op">&lt;</span><span class="ident">HeaderType</span>, <span class="ident">TransactionType</span><span class="op">&gt;&gt;</span>,
+    ) <span class="op">-&gt;</span> <span class="ident">StateProcessorResult</span><span class="op">&lt;</span><span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">Address</span>, <span class="ident">Account</span><span class="op">&gt;&gt;</span>
+    <span class="kw">where</span>
+        <span class="ident">HeaderType</span>: <span class="ident">BlockHeader</span> <span class="op">+</span> <span class="ident">Encode</span> <span class="op">+</span> <span class="ident">Proto</span> <span class="op">+</span> <span class="ident">Clone</span>,
+        <span class="ident">TransactionType</span>: <span class="ident">Transaction</span><span class="op">&lt;</span><span class="ident">Address</span>, <span class="ident">RecoverableSignature</span>, <span class="ident">RecoveryId</span><span class="op">&gt;</span>,
+    {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">address_list</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Address</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="number">8192</span>);
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">address_set</span> <span class="op">=</span> <span class="ident">HashSet</span>::<span class="ident">new</span>();
 
@@ -523,11 +555,11 @@
 
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">address_keys</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">address_list</span>.<span class="ident">len</span>());
         <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">address_list</span>.<span class="ident">len</span>() {
-            <span class="ident">address_keys</span>.<span class="ident">push</span>(<span class="ident">address_list</span>[<span class="ident">i</span>])
+            <span class="ident">address_keys</span>.<span class="ident">push</span>(<span class="kw-2">&amp;</span><span class="ident">address_list</span>[<span class="ident">i</span>])
         }
 
         <span class="comment">// Insert existing balances into a map</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">account_map</span> <span class="op">=</span> <span class="ident">HashMap</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">account_map</span> <span class="op">=</span> <span class="ident">BTreeMap</span>::<span class="ident">new</span>();
 
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">state_cache</span>.<span class="ident">len</span>() <span class="op">&gt;</span> <span class="number">0</span> {
             <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">accounts</span> <span class="op">=</span> <span class="self">self</span>
@@ -536,7 +568,14 @@
             <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> (<span class="number">0</span>..<span class="ident">accounts</span>.<span class="ident">len</span>()).<span class="ident">rev</span>() {
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">account</span>) <span class="op">=</span> <span class="ident">accounts</span>.<span class="ident">remove</span>(<span class="ident">i</span>) {
                     <span class="ident">account_map</span>.<span class="ident">insert</span>(<span class="ident">address_list</span>[<span class="ident">i</span>], <span class="ident">account</span>.<span class="number">1</span>);
+                } <span class="kw">else</span> {
+                    <span class="ident">account_map</span>.<span class="ident">insert</span>(<span class="ident">address_list</span>[<span class="ident">i</span>], <span class="ident">Account</span>::<span class="ident">default</span>());
                 }
+            }
+        } <span class="kw">else</span> {
+            <span class="comment">// fresh start</span>
+            <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">address_list</span>.<span class="ident">len</span>() {
+                <span class="ident">account_map</span>.<span class="ident">insert</span>(<span class="ident">address_list</span>[<span class="ident">i</span>], <span class="ident">Account</span>::<span class="ident">default</span>());
             }
         }
 
@@ -554,7 +593,7 @@
                     <span class="ident">genesis</span> <span class="op">=</span> <span class="bool-val">true</span>;
                 }
                 <span class="kw">for</span> <span class="ident">tx</span> <span class="kw">in</span> <span class="ident">txs</span> {
-                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">e</span>) <span class="op">=</span>
+                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="kw">_</span>) <span class="op">=</span>
                         <span class="ident">StateProcessor</span>::<span class="ident">generate_tx_transition</span>(<span class="ident">tx</span>, <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">account_map</span>, <span class="ident">miner</span>, <span class="ident">genesis</span>)
                     {
                         <span class="ident">revert</span> <span class="op">=</span> <span class="bool-val">true</span>;
@@ -565,22 +604,38 @@
             }
 
             <span class="kw">if</span> <span class="ident">revert</span> {
+                <span class="kw">match</span> <span class="ident">block</span>.<span class="ident">txs</span> {
+                    <span class="prelude-val">Some</span>(<span class="kw-2">ref</span> <span class="ident">txs</span>) <span class="op">=&gt;</span> {
+                        <span class="kw">for</span> <span class="ident">i</span> <span class="kw">in</span> <span class="number">0</span>..<span class="ident">processed_txs</span> {
+                            <span class="ident">StateProcessor</span>::<span class="ident">revert_tx_transition</span>(
+                                <span class="kw-2">&amp;</span><span class="ident">txs</span>[<span class="ident">i</span>],
+                                <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">account_map</span>,
+                                <span class="ident">block</span>.<span class="ident">header</span>.<span class="ident">get_miner</span>(),
+                            )<span class="question-mark">?</span>;
+                        }
+                    }
+                    <span class="prelude-val">None</span> <span class="op">=&gt;</span> {
+                        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Exception</span>::<span class="ident">new</span>(
+                            <span class="string">&quot;Should be impossible to reach, txs have disappeared&quot;</span>,
+                        )));
+                    }
+                }
                 <span class="comment">// TODO: Revert the updates in this block and then stop</span>
                 <span class="kw">break</span>;
             }
         }
 
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Exception</span>::<span class="ident">new</span>(<span class="string">&quot;Not Implemented&quot;</span>)));
+        <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">account_map</span>);
     }
 
     <span class="kw">fn</span> <span class="ident">generate_tx_transition</span><span class="op">&lt;</span><span class="ident">TxType</span><span class="op">&gt;</span>(
         <span class="ident">tx</span>: <span class="kw-2">&amp;</span><span class="ident">TxType</span>,
-        <span class="ident">account_map</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">Address</span>, <span class="ident">ProtoAccount</span><span class="op">&gt;</span>,
+        <span class="ident">account_map</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">Address</span>, <span class="ident">Account</span><span class="op">&gt;</span>,
         <span class="ident">miner</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Address</span><span class="op">&gt;</span>,
         <span class="ident">genesis</span>: <span class="ident">bool</span>,
     ) <span class="op">-&gt;</span> <span class="ident">StateProcessorResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>
     <span class="kw">where</span>
-        <span class="ident">TxType</span>: <span class="ident">Transaction</span>,
+        <span class="ident">TxType</span>: <span class="ident">Transaction</span><span class="op">&lt;</span><span class="ident">Address</span>, <span class="ident">RecoverableSignature</span>, <span class="ident">RecoveryId</span><span class="op">&gt;</span>,
     {
         <span class="comment">// Handle a genesis transaction</span>
         <span class="kw">if</span> <span class="ident">genesis</span> {
@@ -594,8 +649,8 @@
 
                 <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">to_account</span>) <span class="op">=</span> <span class="ident">account_map</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">to</span>) {
                     <span class="comment">// Begin committing updates to account map</span>
-                    <span class="ident">to_account</span>.<span class="ident">set_balance</span>(<span class="ident">tx</span>.<span class="ident">get_amount</span>());
-                    <span class="ident">to_account</span>.<span class="ident">set_nonce</span>(<span class="ident">nonce</span>);
+                    <span class="ident">to_account</span>.<span class="ident">balance</span> <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">get_amount</span>();
+                    <span class="ident">to_account</span>.<span class="ident">nonce</span> <span class="op">=</span> <span class="ident">nonce</span>;
                 } <span class="kw">else</span> {
                     <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Exception</span>::<span class="ident">new</span>(
                         <span class="string">&quot;Invalid Tx: Tx to account does not exist&quot;</span>,
@@ -623,7 +678,7 @@
         <span class="kw">let</span> <span class="ident">nonce</span>;
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">a</span>) <span class="op">=</span> <span class="ident">account_map</span>.<span class="ident">get</span>(<span class="ident">miner_address</span>) {
-            <span class="ident">prev_miner_balance</span> <span class="op">=</span> <span class="ident">StrictU64</span>::<span class="ident">new</span>(<span class="ident">a</span>.<span class="ident">get_balance</span>());
+            <span class="ident">prev_miner_balance</span> <span class="op">=</span> <span class="ident">StrictU64</span>::<span class="ident">new</span>(<span class="ident">a</span>.<span class="ident">balance</span>);
         } <span class="kw">else</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Exception</span>::<span class="ident">new</span>(
                 <span class="string">&quot;Block miner not found in account map&quot;</span>,
@@ -634,8 +689,8 @@
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">f</span>) <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">get_from</span>() {
             <span class="ident">from</span> <span class="op">=</span> <span class="ident">f</span>;
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">a</span>) <span class="op">=</span> <span class="ident">account_map</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">from</span>) {
-                <span class="ident">prev_from_balance</span> <span class="op">=</span> <span class="ident">StrictU64</span>::<span class="ident">new</span>(<span class="ident">a</span>.<span class="ident">get_balance</span>());
-                <span class="ident">prev_from_nonce</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">get_nonce</span>();
+                <span class="ident">prev_from_balance</span> <span class="op">=</span> <span class="ident">StrictU64</span>::<span class="ident">new</span>(<span class="ident">a</span>.<span class="ident">balance</span>);
+                <span class="ident">prev_from_nonce</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">nonce</span>;
             } <span class="kw">else</span> {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Exception</span>::<span class="ident">new</span>(
                     <span class="string">&quot;Invalid Tx: Tx is missing from account&quot;</span>,
@@ -676,12 +731,12 @@
         <span class="comment">// Handle the to account if one is supplied</span>
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">to</span>) <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">get_to</span>() {
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">to_account</span>) <span class="op">=</span> <span class="ident">account_map</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">to</span>) {
-                <span class="kw">let</span> <span class="ident">prev_to_balance</span> <span class="op">=</span> <span class="ident">StrictU64</span>::<span class="ident">new</span>(<span class="ident">to_account</span>.<span class="ident">get_balance</span>());
+                <span class="kw">let</span> <span class="ident">prev_to_balance</span> <span class="op">=</span> <span class="ident">StrictU64</span>::<span class="ident">new</span>(<span class="ident">to_account</span>.<span class="ident">balance</span>);
 
                 <span class="kw">let</span> <span class="ident">new_to_balance</span> <span class="op">=</span> (<span class="ident">prev_to_balance</span> <span class="op">+</span> <span class="ident">amount</span>)<span class="question-mark">?</span>;
 
                 <span class="comment">// Begin committing updates to account map if the previous line succeeded</span>
-                <span class="ident">to_account</span>.<span class="ident">set_balance</span>(<span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">new_to_balance</span>));
+                <span class="ident">to_account</span>.<span class="ident">balance</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">new_to_balance</span>);
             } <span class="kw">else</span> {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Exception</span>::<span class="ident">new</span>(
                     <span class="string">&quot;Invalid Tx: Tx to account does not exist&quot;</span>,
@@ -691,15 +746,15 @@
 
         <span class="comment">// Commit updates for the from address to the account map</span>
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">from_account</span>) <span class="op">=</span> <span class="ident">account_map</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">from</span>) {
-            <span class="ident">from_account</span>.<span class="ident">set_balance</span>(<span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">new_from_balance</span>));
-            <span class="ident">from_account</span>.<span class="ident">set_nonce</span>(<span class="ident">new_from_nonce</span>);
+            <span class="ident">from_account</span>.<span class="ident">balance</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">new_from_balance</span>);
+            <span class="ident">from_account</span>.<span class="ident">nonce</span> <span class="op">=</span> <span class="ident">new_from_nonce</span>;
         } <span class="kw">else</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Exception</span>::<span class="ident">new</span>(<span class="string">&quot;Corrupt account map&quot;</span>)));
         }
 
         <span class="comment">// Commit updates for the miner address to the account map</span>
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">miner_account</span>) <span class="op">=</span> <span class="ident">account_map</span>.<span class="ident">get_mut</span>(<span class="ident">miner_address</span>) {
-            <span class="ident">miner_account</span>.<span class="ident">set_balance</span>(<span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">new_miner_balance</span>));
+            <span class="ident">miner_account</span>.<span class="ident">balance</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">new_miner_balance</span>);
         } <span class="kw">else</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Exception</span>::<span class="ident">new</span>(<span class="string">&quot;Corrupt account map&quot;</span>)));
         }
@@ -707,13 +762,13 @@
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
     }
 
-    <span class="kw">fn</span> <span class="ident">revert_tx_transition</span><span class="op">&lt;</span><span class="ident">TxType</span><span class="op">&gt;</span>(
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">revert_tx_transition</span><span class="op">&lt;</span><span class="ident">TxType</span><span class="op">&gt;</span>(
         <span class="ident">tx</span>: <span class="kw-2">&amp;</span><span class="ident">TxType</span>,
-        <span class="ident">account_map</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">Address</span>, <span class="ident">ProtoAccount</span><span class="op">&gt;</span>,
+        <span class="ident">account_map</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">Address</span>, <span class="ident">Account</span><span class="op">&gt;</span>,
         <span class="ident">miner</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Address</span><span class="op">&gt;</span>,
     ) <span class="op">-&gt;</span> <span class="ident">StateProcessorResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span>
     <span class="kw">where</span>
-        <span class="ident">TxType</span>: <span class="ident">Transaction</span>,
+        <span class="ident">TxType</span>: <span class="ident">Transaction</span><span class="op">&lt;</span><span class="ident">Address</span>, <span class="ident">RecoverableSignature</span>, <span class="ident">RecoveryId</span><span class="op">&gt;</span>,
     {
         <span class="kw">let</span> <span class="ident">miner_address</span>;
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">addr</span>) <span class="op">=</span> <span class="ident">miner</span> {
@@ -728,7 +783,7 @@
         <span class="kw">let</span> <span class="ident">fee</span>;
 
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">a</span>) <span class="op">=</span> <span class="ident">account_map</span>.<span class="ident">get</span>(<span class="ident">miner_address</span>) {
-            <span class="ident">prev_miner_balance</span> <span class="op">=</span> <span class="ident">StrictU64</span>::<span class="ident">new</span>(<span class="ident">a</span>.<span class="ident">get_balance</span>());
+            <span class="ident">prev_miner_balance</span> <span class="op">=</span> <span class="ident">StrictU64</span>::<span class="ident">new</span>(<span class="ident">a</span>.<span class="ident">balance</span>);
         } <span class="kw">else</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Exception</span>::<span class="ident">new</span>(
                 <span class="string">&quot;Block miner not found in account map&quot;</span>,
@@ -739,8 +794,8 @@
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">f</span>) <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">get_from</span>() {
             <span class="ident">from</span> <span class="op">=</span> <span class="ident">f</span>;
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">a</span>) <span class="op">=</span> <span class="ident">account_map</span>.<span class="ident">get</span>(<span class="kw-2">&amp;</span><span class="ident">from</span>) {
-                <span class="ident">prev_from_balance</span> <span class="op">=</span> <span class="ident">StrictU64</span>::<span class="ident">new</span>(<span class="ident">a</span>.<span class="ident">get_balance</span>());
-                <span class="ident">prev_from_nonce</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">get_nonce</span>();
+                <span class="ident">prev_from_balance</span> <span class="op">=</span> <span class="ident">StrictU64</span>::<span class="ident">new</span>(<span class="ident">a</span>.<span class="ident">balance</span>);
+                <span class="ident">prev_from_nonce</span> <span class="op">=</span> <span class="ident">a</span>.<span class="ident">nonce</span>;
             } <span class="kw">else</span> {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Exception</span>::<span class="ident">new</span>(
                     <span class="string">&quot;Invalid Tx: Tx is missing from account&quot;</span>,
@@ -768,12 +823,12 @@
         <span class="comment">// Handle the to account if one is supplied</span>
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">to</span>) <span class="op">=</span> <span class="ident">tx</span>.<span class="ident">get_to</span>() {
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">to_account</span>) <span class="op">=</span> <span class="ident">account_map</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">to</span>) {
-                <span class="kw">let</span> <span class="ident">prev_to_balance</span> <span class="op">=</span> <span class="ident">StrictU64</span>::<span class="ident">new</span>(<span class="ident">to_account</span>.<span class="ident">get_balance</span>());
+                <span class="kw">let</span> <span class="ident">prev_to_balance</span> <span class="op">=</span> <span class="ident">StrictU64</span>::<span class="ident">new</span>(<span class="ident">to_account</span>.<span class="ident">balance</span>);
 
                 <span class="kw">let</span> <span class="ident">new_to_balance</span> <span class="op">=</span> (<span class="ident">prev_to_balance</span> <span class="op">-</span> <span class="ident">amount</span>)<span class="question-mark">?</span>;
 
                 <span class="comment">// Begin committing updates to account map if the previous line succeeded</span>
-                <span class="ident">to_account</span>.<span class="ident">set_balance</span>(<span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">new_to_balance</span>));
+                <span class="ident">to_account</span>.<span class="ident">balance</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">new_to_balance</span>);
             } <span class="kw">else</span> {
                 <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Exception</span>::<span class="ident">new</span>(
                     <span class="string">&quot;Invalid Tx: Tx to account does not exist&quot;</span>,
@@ -783,15 +838,15 @@
 
         <span class="comment">// Commit updates for the from address to the account map</span>
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">from_account</span>) <span class="op">=</span> <span class="ident">account_map</span>.<span class="ident">get_mut</span>(<span class="kw-2">&amp;</span><span class="ident">from</span>) {
-            <span class="ident">from_account</span>.<span class="ident">set_balance</span>(<span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">new_from_balance</span>));
-            <span class="ident">from_account</span>.<span class="ident">set_nonce</span>(<span class="ident">new_from_nonce</span>);
+            <span class="ident">from_account</span>.<span class="ident">balance</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">new_from_balance</span>);
+            <span class="ident">from_account</span>.<span class="ident">nonce</span> <span class="op">=</span> <span class="ident">new_from_nonce</span>;
         } <span class="kw">else</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Exception</span>::<span class="ident">new</span>(<span class="string">&quot;Corrupt account map&quot;</span>)));
         }
 
         <span class="comment">// Commit updates for the miner address to the account map</span>
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">miner_account</span>) <span class="op">=</span> <span class="ident">account_map</span>.<span class="ident">get_mut</span>(<span class="ident">miner_address</span>) {
-            <span class="ident">miner_account</span>.<span class="ident">set_balance</span>(<span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">new_miner_balance</span>));
+            <span class="ident">miner_account</span>.<span class="ident">balance</span> <span class="op">=</span> <span class="ident">u64</span>::<span class="ident">from</span>(<span class="ident">new_miner_balance</span>);
         } <span class="kw">else</span> {
             <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Exception</span>::<span class="ident">new</span>(<span class="string">&quot;Corrupt account map&quot;</span>)));
         }
@@ -799,11 +854,22 @@
         <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
     }
 
-    <span class="kw">fn</span> <span class="ident">apply_transition</span>(
-        <span class="ident">transition</span>: <span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">Address</span>, <span class="ident">ProtoAccount</span><span class="op">&gt;</span>,
-        <span class="ident">root</span>: <span class="kw-2">&amp;</span>[<span class="ident">u8</span>],
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">apply_transition</span>(
+        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>,
+        <span class="ident">transition</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">Address</span>, <span class="ident">Account</span><span class="op">&gt;</span>,
+        <span class="ident">root</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">u8</span>]<span class="op">&gt;</span>,
     ) <span class="op">-&gt;</span> <span class="ident">StateProcessorResult</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span> {
-        <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">Box</span>::<span class="ident">new</span>(<span class="ident">Exception</span>::<span class="ident">new</span>(<span class="string">&quot;Not Implemented&quot;</span>)));
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">addresses</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">transition</span>.<span class="ident">len</span>());
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">accounts</span> <span class="op">=</span> <span class="ident">Vec</span>::<span class="ident">with_capacity</span>(<span class="ident">transition</span>.<span class="ident">len</span>());
+        <span class="kw">for</span> (<span class="ident">key</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="ident">transition</span>.<span class="ident">iter</span>() {
+            <span class="ident">addresses</span>.<span class="ident">push</span>(<span class="ident">key</span>);
+            <span class="ident">accounts</span>.<span class="ident">push</span>(<span class="kw-2">*</span><span class="ident">value</span>);
+        }
+        <span class="kw">let</span> <span class="ident">new_root</span> <span class="op">=</span> <span class="self">self</span>
+            .<span class="ident">worldstate</span>
+            .<span class="ident">insert</span>(<span class="ident">root</span>, <span class="ident">addresses</span>, <span class="ident">accounts</span>.<span class="ident">as_slice</span>())<span class="question-mark">?</span>;
+        <span class="self">self</span>.<span class="ident">state_cache</span>.<span class="ident">push</span>(<span class="ident">new_root</span>.<span class="ident">clone</span>());
+        <span class="prelude-val">Ok</span>(<span class="ident">new_root</span>)
     }
 }
 

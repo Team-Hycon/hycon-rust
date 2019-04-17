@@ -81,6 +81,9 @@
 <span id="81">81</span>
 <span id="82">82</span>
 <span id="83">83</span>
+<span id="84">84</span>
+<span id="85">85</span>
+<span id="86">86</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">serialization</span>::<span class="ident">network</span>::{<span class="ident">Network</span> <span class="kw">as</span> <span class="ident">ProtoNetwork</span>, <span class="ident">Network_oneof_request</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">traits</span>::{<span class="ident">Decode</span>, <span class="ident">Encode</span>, <span class="ident">Exception</span>, <span class="ident">Proto</span>};
@@ -141,6 +144,9 @@
             }
             <span class="ident">Network_oneof_request</span>::<span class="ident">putBlockReturn</span>(<span class="ident">b</span>) <span class="op">=&gt;</span> {
                 <span class="ident">proto_message</span>.<span class="ident">set_putBlockReturn</span>(<span class="ident">b</span>);
+            }
+            <span class="ident">Network_oneof_request</span>::<span class="ident">getTip</span>(<span class="ident">t</span>) <span class="op">=&gt;</span> {
+                <span class="ident">proto_message</span>.<span class="ident">set_getTip</span>(<span class="ident">t</span>);
             }
             <span class="kw">_</span> <span class="op">=&gt;</span> {}
         }

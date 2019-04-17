@@ -1,1 +1,1 @@
-initSidebarItems({"trait":[["ValidAddress",""]],"type":[["Address",""],["AddressResult",""]]});
+initSidebarItems({"type":[["Address",""],["AddressResult",""]]});

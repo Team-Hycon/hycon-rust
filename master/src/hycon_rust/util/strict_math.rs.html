@@ -56,7 +56,7 @@
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">traits</span>::<span class="ident">Exception</span>;
 
 <span class="kw">type</span> <span class="ident">StrictMathResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;&gt;</span>;
-
+<span class="doccomment">/// Strict math to prevent overflow/underflow</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Copy</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">StrictU64</span>(<span class="ident">u64</span>);
 

@@ -529,7 +529,7 @@
             ()
         }
         <span class="kw">fn</span> <span class="ident">open</span>(<span class="ident">_db_path</span>: <span class="ident">PathBuf</span>, <span class="ident">_options</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="self">Self</span>::<span class="ident">OptionType</span><span class="op">&gt;</span>) <span class="op">-&gt;</span> <span class="ident">DBResult</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span> {
-            <span class="prelude-val">Ok</span>(<span class="ident">RocksDBMock</span>::<span class="ident">new</span>(<span class="ident">HashMap</span>::<span class="ident">with_capacity</span>(<span class="number">10000</span>)))
+            <span class="prelude-val">Ok</span>(<span class="ident">RocksDBMock</span>::<span class="ident">new</span>(<span class="ident">HashMap</span>::<span class="ident">with_capacity</span>(<span class="number">50000</span>)))
         }
 
         <span class="kw">fn</span> <span class="ident">destroy</span>(<span class="ident">_db_path</span>: <span class="ident">PathBuf</span>) <span class="op">-&gt;</span> <span class="ident">DBResult</span><span class="op">&lt;</span>()<span class="op">&gt;</span> {

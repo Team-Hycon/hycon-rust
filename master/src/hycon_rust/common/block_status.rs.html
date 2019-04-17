@@ -85,27 +85,29 @@
 <span id="85">85</span>
 <span id="86">86</span>
 <span id="87">87</span>
+<span id="88">88</span>
 </pre><div class="example-wrap"><pre class="rust ">
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">traits</span>::<span class="ident">Exception</span>;
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">traits</span>::{<span class="ident">EnumConverter</span>, <span class="ident">Exception</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
-
+<span class="doccomment">/// Enum for the status of a Block</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">PartialEq</span>, <span class="ident">Clone</span>, <span class="ident">PartialOrd</span>, <span class="ident">Ord</span>, <span class="ident">Eq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">BlockStatus</span> {
+    <span class="doccomment">/// Block has Been Rejected</span>
     <span class="ident">Rejected</span>,
+    <span class="doccomment">/// No information Exists for Block</span>
     <span class="ident">Nothing</span>,
+    <span class="doccomment">/// Header has been processed</span>
     <span class="ident">Header</span>,
+    <span class="doccomment">/// Failed validation for some reason, Header is valid</span>
     <span class="ident">Invalid</span>,
+    <span class="doccomment">/// Block received but not added to longest chain</span>
     <span class="ident">Block</span>,
+    <span class="doccomment">/// Block is part of the currently defined heaviest chain</span>
     <span class="ident">MainChain</span>,
 }
 
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">EnumConverter</span> {
-    <span class="kw">fn</span> <span class="ident">to_u8</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u8</span>;
-    <span class="kw">fn</span> <span class="ident">from_u8</span>(<span class="ident">number</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BlockStatus</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;&gt;</span>;
-}
-
-<span class="kw">impl</span> <span class="ident">EnumConverter</span> <span class="kw">for</span> <span class="ident">BlockStatus</span> {
-    <span class="kw">fn</span> <span class="ident">to_u8</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u8</span> {
+<span class="kw">impl</span> <span class="ident">EnumConverter</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">BlockStatus</span> {
+    <span class="kw">fn</span> <span class="ident">to_output</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u8</span> {
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">BlockStatus</span>::<span class="ident">Rejected</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="number">0</span>,
             <span class="ident">BlockStatus</span>::<span class="ident">Nothing</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="number">1</span>,
@@ -116,7 +118,7 @@
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">from_u8</span>(<span class="ident">number</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BlockStatus</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from_input</span>(<span class="ident">number</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BlockStatus</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;&gt;</span> {
         <span class="kw">match</span> <span class="ident">number</span> {
             <span class="number">0</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">BlockStatus</span>::<span class="ident">Rejected</span>),
             <span class="number">1</span> <span class="op">=&gt;</span> <span class="kw">return</span> <span class="prelude-val">Ok</span>(<span class="ident">BlockStatus</span>::<span class="ident">Nothing</span>),
@@ -140,19 +142,19 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">it_gives_u8_value_from_enum</span>() {
         <span class="kw">let</span> <span class="ident">status</span> <span class="op">=</span> <span class="ident">BlockStatus</span>::<span class="ident">Rejected</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">status</span>.<span class="ident">to_u8</span>(), <span class="number">0</span>)
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">status</span>.<span class="ident">to_output</span>(), <span class="number">0</span>)
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">it_gives_5_as_u8_from_block_status_main_chain</span>() {
         <span class="kw">let</span> <span class="ident">status</span> <span class="op">=</span> <span class="ident">BlockStatus</span>::<span class="ident">MainChain</span>;
-        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">status</span>.<span class="ident">to_u8</span>(), <span class="number">5</span>)
+        <span class="macro">assert_eq</span><span class="macro">!</span>(<span class="ident">status</span>.<span class="ident">to_output</span>(), <span class="number">5</span>)
     }
 
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">it_gives_err_from_wrong_u8</span>() {
         <span class="macro">assert</span><span class="macro">!</span>(
-            <span class="ident">BlockStatus</span>::<span class="ident">from_u8</span>(<span class="number">10</span>).<span class="ident">is_err</span>(),
+            <span class="ident">BlockStatus</span>::<span class="ident">from_input</span>(<span class="number">10</span>).<span class="ident">is_err</span>(),
             <span class="string">&quot;10 is not a value for BlockStatus&quot;</span>
         )
     }
@@ -160,7 +162,7 @@
     <span class="attribute">#[<span class="ident">test</span>]</span>
     <span class="kw">fn</span> <span class="ident">it_gives_err_from_wrong_value</span>() {
         <span class="macro">assert</span><span class="macro">!</span>(
-            <span class="ident">BlockStatus</span>::<span class="ident">from_u8</span>(<span class="number">6</span>).<span class="ident">is_err</span>(),
+            <span class="ident">BlockStatus</span>::<span class="ident">from_input</span>(<span class="number">6</span>).<span class="ident">is_err</span>(),
             <span class="string">&quot;6 is not the value for BlockStatus&quot;</span>
         );
     }

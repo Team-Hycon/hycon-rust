@@ -204,11 +204,12 @@
 <span id="204">204</span>
 <span id="205">205</span>
 <span id="206">206</span>
+<span id="207">207</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">address</span>::<span class="ident">Address</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">traits</span>::{<span class="ident">Encode</span>, <span class="ident">Proto</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">traits</span>::{<span class="ident">BlockHeader</span>, <span class="ident">Encode</span>, <span class="ident">Proto</span>};
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">util</span>::<span class="ident">hash</span>::<span class="ident">hash</span>;
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">serialization</span>::<span class="ident">blockHeader</span>::{<span class="ident">BlockHeader</span> <span class="kw">as</span> <span class="ident">ProtoBlockHeader</span>, <span class="ident">HeaderPrehash</span>};
@@ -225,17 +226,6 @@
     <span class="kw">pub</span> <span class="ident">nonce</span>: <span class="ident">u64</span>,
     <span class="kw">pub</span> <span class="ident">miner</span>: <span class="ident">Address</span>,
 }
-
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">BlockHeader</span> {
-    <span class="kw">fn</span> <span class="ident">get_merkle_root</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">get_time_stamp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">u64</span>;
-    <span class="kw">fn</span> <span class="ident">get_difficulty</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">f64</span>;
-    <span class="kw">fn</span> <span class="ident">get_state_root</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">get_previous_hash</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;&gt;</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">get_nonce</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">u64</span><span class="op">&gt;</span>;
-    <span class="kw">fn</span> <span class="ident">get_miner</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Address</span><span class="op">&gt;</span>;
-}
-
 <span class="kw">impl</span> <span class="ident">BlockHeader</span> <span class="kw">for</span> <span class="ident">Header</span> {
     <span class="kw">fn</span> <span class="ident">get_merkle_root</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">merkle_root</span>
@@ -316,14 +306,26 @@
     }
 
     <span class="kw">fn</span> <span class="ident">from_proto</span>(<span class="ident">prototype</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">ProtoType</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;&gt;</span> {
-        <span class="macro">unimplemented</span><span class="macro">!</span>()
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">miner</span> <span class="op">=</span> [<span class="number">0u8</span>; <span class="number">20</span>];
+        <span class="kw">if</span> <span class="kw-2">&amp;</span><span class="ident">prototype</span>.<span class="ident">get_miner</span>().<span class="ident">len</span>() <span class="op">==</span> <span class="kw-2">&amp;</span><span class="number">20</span> {
+            <span class="ident">miner</span>.<span class="ident">copy_from_slice</span>(<span class="kw-2">&amp;</span><span class="ident">prototype</span>.<span class="ident">get_miner</span>().<span class="ident">to_vec</span>()[<span class="number">0</span>..<span class="number">20</span>]);
+        }
+        <span class="prelude-val">Ok</span>(<span class="self">Self</span> {
+            <span class="ident">merkle_root</span>: <span class="ident">prototype</span>.<span class="ident">get_merkleRoot</span>().<span class="ident">to_vec</span>(),
+            <span class="ident">time_stamp</span>: <span class="ident">prototype</span>.<span class="ident">get_timeStamp</span>(),
+            <span class="ident">miner</span>: <span class="ident">miner</span>,
+            <span class="ident">nonce</span>: <span class="ident">prototype</span>.<span class="ident">get_nonce</span>(),
+            <span class="ident">difficulty</span>: <span class="ident">prototype</span>.<span class="ident">get_difficulty</span>(),
+            <span class="ident">previous_hash</span>: <span class="ident">prototype</span>.<span class="ident">get_previousHash</span>().<span class="ident">to_vec</span>(),
+            <span class="ident">state_root</span>: <span class="ident">prototype</span>.<span class="ident">get_stateRoot</span>().<span class="ident">to_vec</span>(),
+        })
     }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">address</span>::<span class="ident">ValidAddress</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">traits</span>::<span class="ident">ValidAddress</span>;
     <span class="kw">use</span> <span class="ident">rust_base58</span>::<span class="ident">FromBase58</span>;
 
     <span class="attribute">#[<span class="ident">test</span>]</span>

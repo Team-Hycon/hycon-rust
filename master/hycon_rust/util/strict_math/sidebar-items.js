@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["StrictU64",""]]});
+initSidebarItems({"struct":[["StrictU64","Strict math to prevent overflow/underflow"]]});

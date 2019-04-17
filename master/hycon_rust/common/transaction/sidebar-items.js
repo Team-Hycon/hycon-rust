@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["verify_tx",""]],"trait":[["Transaction",""],["Valid",""]]});
+initSidebarItems({"fn":[["verify_tx",""]]});

@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["BlockStatus",""]],"trait":[["EnumConverter",""]]});
+initSidebarItems({"enum":[["BlockStatus","Enum for the status of a Block"]]});

@@ -214,9 +214,9 @@
 
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">address</span>::<span class="ident">Address</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">genesis_tx</span>::<span class="ident">GenesisTx</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">transaction</span>::{<span class="ident">verify_tx</span>, <span class="ident">Transaction</span>, <span class="ident">Valid</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">transaction</span>::<span class="ident">verify_tx</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">serialization</span>::<span class="ident">tx</span>::<span class="ident">GenesisSignedTx</span> <span class="kw">as</span> <span class="ident">ProtoGenesisSignedTx</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">traits</span>::{<span class="ident">Decode</span>, <span class="ident">Encode</span>, <span class="ident">Proto</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">traits</span>::{<span class="ident">Decode</span>, <span class="ident">Encode</span>, <span class="ident">Proto</span>, <span class="ident">Transaction</span>, <span class="ident">VerifiableTransaction</span>};
 
 <span class="kw">use</span> <span class="ident">protobuf</span>::<span class="ident">Message</span> <span class="kw">as</span> <span class="ident">ProtoMessage</span>;
 <span class="kw">use</span> <span class="ident">secp256k1</span>::{<span class="ident">RecoverableSignature</span>, <span class="ident">RecoveryId</span>, <span class="ident">Secp256k1</span>};
@@ -229,7 +229,7 @@
     <span class="ident">recovery</span>: <span class="ident">RecoveryId</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">Transaction</span> <span class="kw">for</span> <span class="ident">SignedGenesisTx</span> {
+<span class="kw">impl</span> <span class="ident">Transaction</span><span class="op">&lt;</span><span class="ident">Address</span>, <span class="ident">RecoverableSignature</span>, <span class="ident">RecoveryId</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SignedGenesisTx</span> {
     <span class="kw">fn</span> <span class="ident">get_from</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Address</span><span class="op">&gt;</span> {
         <span class="prelude-val">None</span>
     }
@@ -281,7 +281,7 @@
         <span class="prelude-val">Ok</span>(<span class="ident">proto_signed_genesis_tx</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">from_proto</span>(<span class="ident">prototype</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">ProtoType</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from_proto</span>(<span class="ident">_prototype</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">ProtoType</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;&gt;</span> {
         <span class="macro">unimplemented</span><span class="macro">!</span>()
     }
 }
@@ -315,7 +315,7 @@
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Valid</span> <span class="kw">for</span> <span class="ident">SignedGenesisTx</span> {
+<span class="kw">impl</span> <span class="ident">VerifiableTransaction</span> <span class="kw">for</span> <span class="ident">SignedGenesisTx</span> {
     <span class="kw">fn</span> <span class="ident">verify</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;&gt;</span> {
         <span class="kw">let</span> <span class="ident">genesis_tx</span> <span class="op">=</span> <span class="ident">GenesisTx</span>::<span class="ident">new</span>(<span class="self">self</span>.<span class="ident">to</span>, <span class="self">self</span>.<span class="ident">amount</span>);
         <span class="kw">let</span> <span class="ident">encoding</span> <span class="op">=</span> <span class="ident">genesis_tx</span>.<span class="ident">encode</span>()<span class="question-mark">?</span>;
@@ -326,7 +326,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">address</span>::<span class="ident">ValidAddress</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">traits</span>::<span class="ident">ValidAddress</span>;
     <span class="kw">use</span> <span class="ident">rand</span>::{<span class="ident">thread_rng</span>, <span class="ident">Rng</span>};
 
     <span class="attribute">#[<span class="ident">test</span>]</span>

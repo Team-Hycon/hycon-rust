@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["hash",""],["hash_cryptonight",""]]});
+initSidebarItems({"fn":[["hash","Calculates the Blake2b Hash of the input data"],["hash_cryptonight","Calculates the Cryptonight hash of the input"]]});

@@ -1,1 +1,1 @@
-initSidebarItems({"enum":[["NodeType",""]],"struct":[["LegacyTrie",""]]});
+initSidebarItems({"enum":[["NodeType","A node in the Merkle Patricia Trie"]],"struct":[["LegacyTrie","Hycon Merkle Patricia Trie, a hashed radix tree with bytewise branching"]]});

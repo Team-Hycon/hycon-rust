@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["TreeNode",""]]});
+initSidebarItems({"struct":[["TreeNode","Node that represents a future that will resolve to a new node in a Merkle Patricia Trie"]]});

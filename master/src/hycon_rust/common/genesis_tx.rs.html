@@ -145,12 +145,10 @@
 <span id="145">145</span>
 <span id="146">146</span>
 <span id="147">147</span>
-<span id="148">148</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">address</span>::<span class="ident">Address</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">transaction</span>::<span class="ident">Transaction</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">serialization</span>::<span class="ident">tx</span>::<span class="ident">GenesisTx</span> <span class="kw">as</span> <span class="ident">ProtoGenesisTx</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">traits</span>::{<span class="ident">Decode</span>, <span class="ident">Encode</span>, <span class="ident">Proto</span>};
+<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">traits</span>::{<span class="ident">Decode</span>, <span class="ident">Encode</span>, <span class="ident">Proto</span>, <span class="ident">Transaction</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">error</span>::<span class="ident">Error</span>;
 
 <span class="kw">use</span> <span class="ident">protobuf</span>::<span class="ident">Message</span> <span class="kw">as</span> <span class="ident">ProtoMessage</span>;
@@ -162,7 +160,7 @@
     <span class="ident">amount</span>: <span class="ident">u64</span>,
 }
 
-<span class="kw">impl</span> <span class="ident">Transaction</span> <span class="kw">for</span> <span class="ident">GenesisTx</span> {
+<span class="kw">impl</span> <span class="ident">Transaction</span><span class="op">&lt;</span><span class="ident">Address</span>, <span class="ident">RecoverableSignature</span>, <span class="ident">RecoveryId</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">GenesisTx</span> {
     <span class="kw">fn</span> <span class="ident">get_from</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Address</span><span class="op">&gt;</span> {
         <span class="prelude-val">None</span>
     }
@@ -200,7 +198,7 @@
         <span class="ident">proto_genesis_tx</span>.<span class="ident">set_amount</span>(<span class="self">self</span>.<span class="ident">amount</span>);
         <span class="prelude-val">Ok</span>(<span class="ident">proto_genesis_tx</span>)
     }
-        <span class="kw">fn</span> <span class="ident">from_proto</span>(<span class="ident">prototype</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">ProtoType</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">from_proto</span>(<span class="ident">_prototype</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">ProtoType</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;&gt;</span> {
         <span class="macro">unimplemented</span><span class="macro">!</span>()
     }
 }

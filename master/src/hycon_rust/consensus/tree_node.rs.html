@@ -214,6 +214,22 @@
 <span id="214">214</span>
 <span id="215">215</span>
 <span id="216">216</span>
+<span id="217">217</span>
+<span id="218">218</span>
+<span id="219">219</span>
+<span id="220">220</span>
+<span id="221">221</span>
+<span id="222">222</span>
+<span id="223">223</span>
+<span id="224">224</span>
+<span id="225">225</span>
+<span id="226">226</span>
+<span id="227">227</span>
+<span id="228">228</span>
+<span id="229">229</span>
+<span id="230">230</span>
+<span id="231">231</span>
+<span id="232">232</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">account</span>::<span class="ident">db_state</span>::<span class="ident">DBState</span>;
 <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">account</span>::<span class="ident">node_ref</span>::<span class="ident">NodeRef</span>;
@@ -226,10 +242,25 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">fmt</span>::{<span class="ident">Debug</span>, <span class="ident">Formatter</span>, <span class="prelude-ty">Result</span> <span class="kw">as</span> <span class="ident">FormatResult</span>};
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">sync</span>::{<span class="ident">Arc</span>, <span class="ident">Mutex</span>};
 <span class="kw">use</span> <span class="ident">tokio</span>::<span class="ident">prelude</span>::<span class="kw-2">*</span>;
+<span class="doccomment">/// Node that represents a future that will resolve to a new node in a Merkle Patricia Trie</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">TreeNode</span> {
     <span class="ident">node</span>: <span class="ident">NodeType</span>,
     <span class="ident">location</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// A number representing the how much of the current node&#39;s physical location represents the node&#39;s parent</span>
+    <span class="doccomment">/// #### Example</span>
+    <span class="doccomment">/// Suppose we have a key</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// let key = [0,1,2,3,4,5,6];</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// The location in the tree for this node&#39;s parent would then be:</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// key[0..parent];</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// With ```parent=3``` for example, the parent&#39;s location would be</span>
+    <span class="doccomment">/// ```</span>
+    <span class="doccomment">/// key[0..3] == [0,1,2]</span>
+    <span class="doccomment">/// ```</span>
     <span class="kw">pub</span> <span class="ident">parent</span>: <span class="ident">usize</span>,
     <span class="ident">futures</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">TreeNode</span><span class="op">&gt;</span>,
     <span class="ident">write_queue</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Mutex</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span>, <span class="ident">DBState</span>)<span class="op">&gt;&gt;</span><span class="op">&gt;</span>,
@@ -250,11 +281,12 @@
             <span class="ident">write_queue</span>,
         }
     }
-
+    <span class="doccomment">/// Adds a sub-future to this node, which will be resolved before this one</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">add_future</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">tree_node</span>: <span class="kw-2">&amp;</span><span class="ident">TreeNode</span>) {
         <span class="self">self</span>.<span class="ident">futures</span>.<span class="ident">push</span>(<span class="ident">tree_node</span>.<span class="ident">clone</span>());
     }
 
+    <span class="doccomment">/// Retrieves a reference to the [NodeRef](crate::account::node_ref::NodeRef) at the next location specified by the key</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_next_node_location</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">key</span>: <span class="ident">u8</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">NodeRef</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">node</span> {
             <span class="ident">NodeType</span>::<span class="ident">Leaf</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="prelude-val">None</span>,
@@ -267,22 +299,22 @@
             }
         }
     }
-
+    <span class="doccomment">/// Returns a reference to the [Node](crate::consensus::legacy_trie::NodeType) held by this struct</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_node</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">NodeType</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">node</span>
     }
-
+    <span class="doccomment">/// Returns the physical location in the tree of this Node</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_location</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="kw-2">&amp;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">u8</span><span class="op">&gt;</span> {
         <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">location</span>
     }
-
+    <span class="doccomment">/// Check if contained Node is a leaf node</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_leaf</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-&gt;</span> <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">node</span> {
             <span class="ident">NodeType</span>::<span class="ident">Leaf</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="bool-val">true</span>,
             <span class="ident">NodeType</span>::<span class="ident">Branch</span>(<span class="kw">_</span>) <span class="op">=&gt;</span> <span class="bool-val">false</span>,
         }
     }
-
+    <span class="doccomment">/// Upgrades a NodeType::Leaf to NodeType::Branch</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">upgrade_to_branch</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Box</span><span class="op">&lt;</span><span class="ident">Error</span><span class="op">&gt;&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">node</span> {
             <span class="ident">NodeType</span>::<span class="ident">Leaf</span>(<span class="ident">account</span>) <span class="op">=&gt;</span> {

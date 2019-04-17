@@ -17,12 +17,6 @@
 <span id="17">17</span>
 <span id="18">18</span>
 <span id="19">19</span>
-<span id="20">20</span>
-<span id="21">21</span>
-<span id="22">22</span>
-<span id="23">23</span>
-<span id="24">24</span>
-<span id="25">25</span>
 </pre><div class="example-wrap"><pre class="rust ">
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">consensus</span>;
 <span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">difficulty_adjuster</span>;
@@ -34,19 +28,13 @@
 <span class="kw">use</span> <span class="ident">std</span>::<span class="ident">cmp</span>::<span class="ident">Ordering</span>;
 <span class="doccomment">/// # BlockForkChoice Trait</span>
 <span class="doccomment">/// Acts as a comparator between two blocks to give precedence to one over the other in the event of a forking event</span>
-<span class="doccomment">/// ___</span>
-<span class="doccomment">/// ## Required Methods</span>
-<span class="doccomment">/// ### Fork Choice</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// fn fork_choice(&amp;self, other: &amp;Self) -&gt; std::cmp::Ordering</span>
-<span class="doccomment">/// ```</span>
-<span class="doccomment">/// #### Arguments</span>
-<span class="doccomment">/// - `other` - some other block to compare to</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// #### Returns</span>
-<span class="doccomment">///  An ordering between self and other</span>
-<span class="doccomment">/// ___</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">BlockForkChoice</span> {
+    <span class="doccomment">/// Compares two blocks and returns an ordering between them</span>
+    <span class="doccomment">/// #### Arguments</span>
+    <span class="doccomment">/// - `other` - some other block to compare to</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// #### Returns</span>
+    <span class="doccomment">/// An ordering between self and other</span>
     <span class="kw">fn</span> <span class="ident">fork_choice</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) <span class="op">-&gt;</span> <span class="ident">Ordering</span>;
 }
 </pre></div>

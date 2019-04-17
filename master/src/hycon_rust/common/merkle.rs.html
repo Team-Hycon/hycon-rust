@@ -557,10 +557,10 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">test</span>)]</span>
 <span class="kw">mod</span> <span class="ident">tests</span> {
     <span class="kw">use</span> <span class="kw">super</span>::<span class="kw-2">*</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">address</span>::{<span class="ident">Address</span>, <span class="ident">ValidAddress</span>};
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">address</span>::<span class="ident">Address</span>;
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">signed_tx</span>::<span class="ident">SignedTx</span>;
     <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">common</span>::<span class="ident">tx</span>::<span class="ident">Tx</span>;
-    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">traits</span>::<span class="ident">Encode</span>;
+    <span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">traits</span>::{<span class="ident">Encode</span>, <span class="ident">ValidAddress</span>};
     <span class="kw">use</span> <span class="ident">blake2_rfc</span>::<span class="ident">blake2b</span>::<span class="ident">blake2b</span>;
     <span class="kw">use</span> <span class="ident">secp256k1</span>::{<span class="ident">RecoverableSignature</span>, <span class="ident">RecoveryId</span>, <span class="ident">Secp256k1</span>};
 

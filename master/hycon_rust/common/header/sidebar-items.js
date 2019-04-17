@@ -1,1 +1,1 @@
-initSidebarItems({"struct":[["Header",""]],"trait":[["BlockHeader",""]]});
+initSidebarItems({"struct":[["Header",""]]});
