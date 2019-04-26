@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["SyncManager","State Machine for Sync operation"]]});
